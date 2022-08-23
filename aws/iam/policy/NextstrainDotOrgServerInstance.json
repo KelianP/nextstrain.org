@@ -100,6 +100,18 @@
       "Resource": [
         "arn:aws:s3:::nextstrain-groups/*"
       ]
+    },
+    {
+      "Sid": "CognitoUserPoolActions",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:AdminAddUserToGroup",
+        "cognito-idp:AdminRemoveUserFromGroup",
+        "cognito-idp:ListUsersInGroup"
+      ],
+      "Resource": [
+        "arn:aws:cognito-idp:us-east-1:827581582529:userpool/us-east-1_Cg5rcTged"
+      ]
     }
   ]
 }

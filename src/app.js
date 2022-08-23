@@ -303,6 +303,21 @@ app.routeAsync("/groups/:groupName")
 app.use("/groups/:groupName/settings",
   endpoints.groups.setGroup(req => req.params.groupName));
 
+app.routeAsync("/groups/:groupName/settings/members")
+  .getAsync(endpoints.groups.listMembers);
+
+app.routeAsync("/groups/:groupName/settings/roles")
+  .getAsync(endpoints.groups.listRoles);
+
+app.routeAsync("/groups/:groupName/settings/roles/:roleName/members")
+  .getAsync(endpoints.groups.listRoleMembers);
+
+app.routeAsync("/groups/:groupName/settings/roles/:roleName/members/:username")
+  .getAsync(endpoints.groups.getRoleMember)
+  .putAsync(endpoints.groups.putRoleMember)
+  .deleteAsync(endpoints.groups.deleteRoleMember)
+;
+
 app.route("/groups/:groupName/settings/*")
   .all(() => { throw new NotFound(); });
 
