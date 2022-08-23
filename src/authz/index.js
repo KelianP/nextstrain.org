@@ -1,7 +1,6 @@
 const assert = require("assert").strict;
 
 const {AuthzDenied} = require("../exceptions");
-const {Source, Resource} = require("../sources/models");
 
 const actions = require("./actions");
 const tags = require("./tags");
@@ -49,11 +48,13 @@ const authorized = (user, action, object) => {
    * approximately never.
    *    -trs, 4 Jan 2022
    */
-  /* eslint-disable indent, no-multi-spaces, semi-spacing */
+  /* eslint-disable indent, no-multi-spaces, semi-spacing, no-use-before-define */
   const policy =
+    object instanceof Group    ? object.authzPolicy        :
     object instanceof Source   ? object.authzPolicy        :
     object instanceof Resource ? object.source.authzPolicy :
                                                       null ;
+  /* eslint-enable no-use-before-define */
 
   const objectTags = object.authzTags;
   const userRoles = user ? user.authzRoles : new Set();
@@ -129,3 +130,15 @@ module.exports = {
   actions,
   tags,
 };
+
+
+/* Import these after we declare exports to avoid circular import issues, as
+ * these modules also import this module.  I think this would be unnecessary if
+ * we used ESM "export" declarations here instead of the CommonJS
+ * "module.exports", but converting this to use ESM is a change with broader
+ * impact (although a change I'd like to make more broadly in this codebase at
+ * some point sooner than later).
+ *   -trs, 3 Aug 2022
+ */
+const {Group} = require("../groups");
+const {Source, Resource} = require("../sources/models");
