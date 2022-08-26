@@ -41,6 +41,12 @@ const {
 } = endpoints.sources;
 
 const {
+  getGroupOverview,
+  putGroupOverview,
+  deleteGroupOverview,
+} = endpoints.groups;
+
+const {
   CoreSource,
   CoreStagingSource,
   CommunitySource,
@@ -297,6 +303,12 @@ app.routeAsync("/groups/:groupName")
    * renders wrong for some reason that's not clear.
    */
   .getAsync(endpoints.static.sendGatsbyEntrypoint)
+;
+
+app.routeAsync("/groups/:groupName/settings/overview")
+  .getAsync(getGroupOverview)
+  .putAsync(putGroupOverview)
+  .deleteAsync(deleteGroupOverview)
 ;
 
 app.route("/groups/:groupName/settings/*")
