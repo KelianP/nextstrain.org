@@ -122,9 +122,31 @@ const assertAuthorized = (user, action, object) => {
 };
 
 
+/**
+ * Express-style middleware that calls {@link assertAuthorized} with the (user,
+ * action, object) produced from the request by the given extractor function.
+ *
+ * @param {argsExtractor} argsExtractor - Function to extract (user, action,
+ *   object) array from the request
+ * @returns {expressMiddleware}
+ * @throws {AuthzDenied}
+ */
+const assertAuthorizedReq = (argsExtractor) => (req, res, next) => {
+  assertAuthorized(...argsExtractor(req));
+  return next();
+};
+
+/**
+ * @callback argsExtractor
+ * @param {express.request} req
+ * @returns {Array} args - three element array of (user, action, object)
+ */
+
+
 module.exports = {
   authorized,
   assertAuthorized,
+  assertAuthorizedReq,
   evaluatePolicy,
 
   actions,
