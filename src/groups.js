@@ -4,6 +4,8 @@ const {NotFound} = require("http-errors");
 const authz = require("./authz");
 
 const GROUPS_DATA = require("../data/groups.json");
+// TODO: figure out why this doesn't work without /groups
+const {GroupSource} = require("./sources/groups");
 
 const PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -47,6 +49,12 @@ class Group {
      */
     this.name = groupRecord.name;
     assertValidGroupName(this.name);
+
+    /**
+     * Source for this Group.
+     * @type {GroupSource}
+     */
+    this.source = new GroupSource(this.name);
 
     /**
      * Is this Group public (e.g. readable by all)?

@@ -5,7 +5,6 @@ const yamlFront = require("yaml-front-matter");
 
 const authz = require("../authz");
 const {fetch} = require("../fetch");
-const {Group} = require("../groups");
 const utils = require("../utils");
 const {Source, Dataset, Narrative} = require("./models");
 
@@ -15,16 +14,21 @@ const MULTI_TENANT_BUCKET = "nextstrain-groups";
 
 
 class GroupSource extends Source {
-  constructor(groupOrName) {
+  constructor(name) {
     super();
+    this.name = name;
+  }
 
-    this.group = groupOrName instanceof Group
-      ? groupOrName
-      : new Group(groupOrName);
+  /**
+   * Group of this GroupSource.
+   */
+  group() {
+    const {Group} = require("../groups"); // eslint-disable-line global-require
+    return new Group(this.name);
   }
 
   get authzPolicy() {
-    const basePolicy = authzPolicy(this.group);
+    const basePolicy = authzPolicy(this.group());
 
     const publicPolicy = [
       /* No role restriction on reading anything tagged "public".
@@ -32,33 +36,33 @@ class GroupSource extends Source {
       {tag: authz.tags.Visibility.Public, role: "*", allow: [authz.actions.Read]},
     ];
 
-    return this.group.isPublic
+    return this.group().isPublic
       ? basePolicy.concat(publicPolicy)
       : basePolicy;
   }
 
   get authzTags() {
     return new Set(
-      this.group.isPublic
+      this.group().isPublic
         ? [authz.tags.Type.Source, authz.tags.Visibility.Public]
         : [authz.tags.Type.Source]
     );
   }
   get authzTagsToPropagate() {
     return new Set(
-      this.group.isPublic
+      this.group().isPublic
         ? [authz.tags.Visibility.Public]
         : []
     );
   }
 
   get bucket() {
-    return this.group.bucket ?? MULTI_TENANT_BUCKET;
+    return this.group().bucket ?? MULTI_TENANT_BUCKET;
   }
 
   get prefix() {
     return this.bucket === MULTI_TENANT_BUCKET
-      ? `${this.group.name}/`
+      ? `${this.group().name}/`
       : "";
   }
 
@@ -100,7 +104,7 @@ class GroupSource extends Source {
       let files = [];
       S3.listObjectsV2({Bucket: this.bucket, Prefix: prefix}).eachPage((err, data, done) => {
         if (err) {
-          utils.warn(`Could not list S3 objects for group '${this.group.name}'\n${err.message}`);
+          utils.warn(`Could not list S3 objects for group '${this.group().name}'\n${err.message}`);
           return reject(err);
         }
         if (data===null) { // no more data
@@ -187,7 +191,7 @@ class GroupSource extends Source {
    */
   async getInfo() {
     const defaults = {
-      title: `"${this.group.name}" Nextstrain group`,
+      title: `"${this.group().name}" Nextstrain group`,
       overview: `The available datasets and narratives in this group are listed below.`,
       showDatasets: true,
       showNarratives: true,

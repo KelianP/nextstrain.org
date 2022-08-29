@@ -45,7 +45,6 @@ const {
   CoreStagingSource,
   CommunitySource,
   UrlDefinedSource,
-  GroupSource,
 } = sources;
 
 const esc = encodeURIComponent;
@@ -279,13 +278,13 @@ app.routeAsync("/fetch/:authority/*")
  */
 
 app.use("/groups/:groupName",
-  setSource(req => new GroupSource(req.params.groupName)),
+  endpoints.groups.setGroup(req => req.params.groupName),
 
   // Canonicalize the Group name.
   (req, res, next) => {
     const restOfUrl = req.url !== "/" ? req.url : "";
 
-    const canonicalName = req.context.source.group.name;
+    const canonicalName = req.context.group.name;
     const canonicalUrl = `/groups/${esc(canonicalName)}${restOfUrl}`;
 
     return req.params.groupName !== canonicalName
@@ -300,9 +299,6 @@ app.routeAsync("/groups/:groupName")
   .getAsync(endpoints.static.sendGatsbyEntrypoint)
 ;
 
-app.use("/groups/:groupName/settings",
-  endpoints.groups.setGroup(req => req.params.groupName));
-
 app.route("/groups/:groupName/settings/*")
   .all(() => { throw new NotFound(); });
 
@@ -311,14 +307,18 @@ app.routeAsync("/groups/:groupName/narratives")
   .getAsync((req, res) => res.redirect(`/groups/${esc(req.params.groupName)}`));
 
 app.routeAsync("/groups/:groupName/narratives/*")
-  .all(setNarrative(req => req.params[0]))
+  .all(
+    setSource(req => req.context.group.source),
+    setNarrative(req => req.params[0]))
   .getAsync(getNarrative)
   .putAsync(putNarrative)
   .deleteAsync(deleteNarrative)
 ;
 
 app.routeAsync("/groups/:groupName/*")
-  .all(setDataset(req => req.params[0]))
+  .all(
+    setSource(req => req.context.group.source),
+    setDataset(req => req.params[0]))
   .getAsync(getDataset)
   .putAsync(putDataset)
   .deleteAsync(deleteDataset)

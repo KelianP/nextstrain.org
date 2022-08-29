@@ -1,7 +1,6 @@
 const authz = require("../authz");
 const {ALL_GROUPS} = require("../groups");
 const {contentTypesProvided} = require("../negotiate");
-const {GroupSource} = require("../sources");
 const {sendGatsbyPage} = require("./static");
 
 
@@ -15,7 +14,7 @@ const {sendGatsbyPage} = require("./static");
  *                  `private` -> {bool} (group is private)
  */
 const visibleGroups = (user) => ALL_GROUPS
-  .map(g => [g.name, new GroupSource(g)])
+  .map(g => [g.name, g.source])
   .filter(([, source]) => authz.authorized(user, authz.actions.Read, source))
   .map(([name, source]) => ({
     name,
