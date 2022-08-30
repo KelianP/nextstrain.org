@@ -5,7 +5,7 @@ const {Group} = require("../groups");
 const setGroup = (nameExtractor) => (req, res, next) => {
   const group = new Group(nameExtractor(req));
 
-  authz.assertAuthorized(req.user, authz.actions.Read, group);
+  // No authorization is checked here. To be done by specific endpoints.
 
   req.context.group = group;
   return next();
